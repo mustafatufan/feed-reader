@@ -3,12 +3,13 @@ package com.gamesys.feed.repository;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabase;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
@@ -19,20 +20,21 @@ import com.gamesys.feed.service.Feed;
 @Repository("feedRepository")
 public class FeedRepositoryImpl implements FeedRepository {
 
-	private final String INSERT = "insert into FEED values (?, ?)";
-	private final String SELECT = "select * from FEED order by id desc limit ?";
+	private final Logger logger = LoggerFactory.getLogger(FeedRepositoryImpl.class);
+
+	private final String INSERT_FEED = "insert into FEED (id, text) values (?, ?)";
+	private final String SELECT_FEED = "select id, text from FEED order by id desc limit ?";
 
 	private EmbeddedDatabase database;
 
 	@PostConstruct
 	private void init() {
 		initiate();
-
 	}
 
 	private void initiate() {
 		EmbeddedDatabaseBuilder builder = new EmbeddedDatabaseBuilder();
-		database = builder.setType(EmbeddedDatabaseType.H2).addScript("h2/create-table.sql").build();
+		database = builder.setType(EmbeddedDatabaseType.H2).addScript("h2/create-feed.sql").build();
 	}
 
 	@Override
@@ -40,17 +42,17 @@ public class FeedRepositoryImpl implements FeedRepository {
 		Connection con = null;
 		try {
 			con = database.getConnection();
-			PreparedStatement prep = con.prepareStatement(INSERT);
+			PreparedStatement prep = con.prepareStatement(INSERT_FEED);
 			prep.setLong(1, id);
 			prep.setString(2, text);
 			prep.execute();
-		} catch (SQLException ex) {
+		} catch (Exception ex) {
 			throw new FeedRepositoryUnavailableException(ex);
 		} finally {
 			try {
 				con.close();
-			} catch (SQLException ex) {
-				// TODO
+			} catch (Exception ex) {
+				logger.error("Connection could not be closed.", ex);
 			}
 		}
 	}
@@ -61,22 +63,21 @@ public class FeedRepositoryImpl implements FeedRepository {
 		Connection con = null;
 		try {
 			con = database.getConnection();
-			PreparedStatement prep = con.prepareStatement(SELECT);
+			PreparedStatement prep = con.prepareStatement(SELECT_FEED);
 			prep.setInt(1, size);
 			ResultSet result = prep.executeQuery();
 			while (result.next()) {
-				Feed feed = new Feed();
-				feed.setId(result.getLong(1));
-				feed.setText(result.getString(2));
-				list.add(feed);
+				Long id = result.getLong(1);
+				String text = result.getString(2);
+				list.add(new Feed(id, text));
 			}
-		} catch (SQLException ex) {
+		} catch (Exception ex) {
 			throw new FeedRepositoryUnavailableException(ex);
 		} finally {
 			try {
 				con.close();
-			} catch (SQLException ex) {
-				// TODO:
+			} catch (Exception ex) {
+				logger.error("Connection could not be closed.", ex);
 			}
 		}
 		return list;

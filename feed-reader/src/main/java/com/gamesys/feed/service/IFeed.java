@@ -5,5 +5,4 @@ public interface IFeed {
 	public Long getId();
 
 	public String getText();
-
 }

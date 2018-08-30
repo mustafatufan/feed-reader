@@ -1,8 +1,14 @@
 package com.gamesys.feed.service;
 
 public class Feed implements IFeed {
+
 	private Long id;
 	private String text;
+
+	public Feed(Long id, String text) {
+		this.id = id;
+		this.text = text;
+	}
 
 	@Override
 	public Long getId() {
@@ -21,5 +27,4 @@ public class Feed implements IFeed {
 	public void setText(String text) {
 		this.text = text;
 	}
-
 }

@@ -1,5 +1,7 @@
 package com.gamesys.feed.job;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -11,6 +13,8 @@ import com.gamesys.feed.service.FeedServiceUnavailableException;
 @Component
 public class FeedLoaderJob {
 
+	private final Logger logger = LoggerFactory.getLogger(FeedLoaderJob.class);
+
 	@Autowired
 	@Qualifier("feedService")
 	private FeedService feedService;
@@ -20,7 +24,7 @@ public class FeedLoaderJob {
 		try {
 			feedService.loadFeed();
 		} catch (FeedServiceUnavailableException ex) {
-			// TODO: log ex
+			logger.error("Feed is unavailable.", ex);
 		}
 
 	}
