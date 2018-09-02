@@ -10,4 +10,5 @@ public interface FeedRepository {
 
 	public List<Feed> getLast(int size) throws FeedRepositoryUnavailableException;
 
+	public Long getMaxFeedId() throws FeedRepositoryUnavailableException;
 }

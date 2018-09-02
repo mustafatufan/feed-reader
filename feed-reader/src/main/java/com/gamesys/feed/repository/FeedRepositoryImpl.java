@@ -21,9 +21,11 @@ import com.gamesys.feed.service.Feed;
 public class FeedRepositoryImpl implements FeedRepository {
 
 	private final Logger logger = LoggerFactory.getLogger(FeedRepositoryImpl.class);
+	private final String CONNECTION_NOT_CLOSED_ERROR_LOG = "Connection could not be closed.";
 
 	private final String INSERT_FEED = "insert into FEED (id, text) values (?, ?)";
 	private final String SELECT_FEED = "select id, text from FEED order by id desc limit ?";
+	private final String SELECT_MAX_FEED_ID = "select max(id) from FEED";
 
 	private EmbeddedDatabase database;
 
@@ -52,7 +54,7 @@ public class FeedRepositoryImpl implements FeedRepository {
 			try {
 				con.close();
 			} catch (Exception ex) {
-				logger.error("Connection could not be closed.", ex);
+				logConnectionNotClosedError(ex);
 			}
 		}
 	}
@@ -77,9 +79,36 @@ public class FeedRepositoryImpl implements FeedRepository {
 			try {
 				con.close();
 			} catch (Exception ex) {
-				logger.error("Connection could not be closed.", ex);
+				logConnectionNotClosedError(ex);
 			}
 		}
 		return list;
+	}
+
+	@Override
+	public Long getMaxFeedId() throws FeedRepositoryUnavailableException {
+		Long max = Long.MIN_VALUE;
+		Connection con = null;
+		try {
+			con = database.getConnection();
+			PreparedStatement prep = con.prepareStatement(SELECT_MAX_FEED_ID);
+			ResultSet result = prep.executeQuery();
+			if (result.next()) {
+				max = result.getLong(1);
+			}
+		} catch (Exception ex) {
+			throw new FeedRepositoryUnavailableException(ex);
+		} finally {
+			try {
+				con.close();
+			} catch (Exception ex) {
+				logConnectionNotClosedError(ex);
+			}
+		}
+		return max;
+	}
+
+	private void logConnectionNotClosedError(Throwable ex) {
+		logger.error(CONNECTION_NOT_CLOSED_ERROR_LOG, ex);
 	}
 }
