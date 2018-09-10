@@ -20,12 +20,7 @@ public class FeedServiceImpl implements FeedService {
 	@Value("${feed.url}")
 	private String feedUrl;
 
-	@Autowired
-	@Qualifier("feedParserService")
 	private FeedParserService feedParserService;
-
-	@Autowired
-	@Qualifier("feedRepository")
 	private FeedRepository feedRepository;
 
 	@Override
@@ -66,5 +61,17 @@ public class FeedServiceImpl implements FeedService {
 
 	private IFeed convertFeed(Feed feed) {
 		return feed;
+	}
+
+	@Autowired
+	@Qualifier("feedParserService")
+	public void setFeedParserService(FeedParserService feedParserService) {
+		this.feedParserService = feedParserService;
+	}
+
+	@Autowired
+	@Qualifier("feedRepository")
+	public void setFeedRepository(FeedRepository feedRepository) {
+		this.feedRepository = feedRepository;
 	}
 }

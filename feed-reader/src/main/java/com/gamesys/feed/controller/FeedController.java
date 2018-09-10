@@ -20,8 +20,6 @@ public class FeedController {
 
 	private final Logger logger = LoggerFactory.getLogger(FeedController.class);
 
-	@Autowired
-	@Qualifier("feedService")
 	private FeedService feedService;
 
 	@RequestMapping("/feed")
@@ -34,4 +32,11 @@ public class FeedController {
 		}
 		return list;
 	}
+
+	@Autowired
+	@Qualifier("feedService")
+	public void setFeedService(FeedService feedService) {
+		this.feedService = feedService;
+	}
+
 }
